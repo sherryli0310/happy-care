@@ -3,213 +3,253 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Happy Full Care Hub</title>
+    <title>Happy 专业健康管家</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        :root { --bg: #fdf5e6; --card: #ffffff; --text: #5d4037; --accent: #ffb7b2; --warn: #fff176; }
-        body { background-color: var(--bg); font-family: -apple-system, sans-serif; color: var(--text); padding: 10px; margin: 0; }
-        .container { max-width: 650px; margin: 0 auto; }
-        .panel { background: var(--card); padding: 15px; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 2px solid #ffdad9; margin-bottom: 15px; }
-        .section-title { font-size: 1.1rem; font-weight: bold; margin-bottom: 12px; display: flex; align-items: center; gap: 5px; color: #8d6e63; }
+        :root { --bg: #f4f7f6; --card: #ffffff; --accent: #ffb7b2; --warn: #ff5252; --heavy: #5d4037; }
+        body { background: var(--bg); font-family: sans-serif; margin: 0; padding: 10px; color: var(--heavy); font-size: 14px; }
+        .panel { background: var(--card); border-radius: 15px; padding: 15px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+        h3 { margin: 0 0 10px 0; font-size: 16px; border-left: 4px solid var(--accent); padding-left: 8px; }
         
-        /* 五大项网格布局 */
-        .core-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .card { background: #fffaf0; padding: 10px; border-radius: 15px; border: 1px solid #fce4ec; }
-        .card h3 { margin: 0 0 5px 0; font-size: 0.9rem; }
-        .plan-box { font-size: 0.75rem; color: #9e9e9e; margin-bottom: 5px; }
+        /* 网格布局 */
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .card { background: #fffcf9; padding: 10px; border-radius: 12px; border: 1px solid #eee; }
+        .full-card { grid-column: span 2; }
         
-        /* 状态标记 */
-        .yellow-tag { background: var(--warn); border-radius: 4px; padding: 2px 5px; font-weight: bold; }
+        label { font-size: 12px; color: #888; display: block; margin-top: 5px; }
+        input, select, textarea { width: 100%; padding: 8px; margin: 4px 0; border-radius: 6px; border: 1px solid #ddd; box-sizing: border-box; font-size: 13px; }
+        button { background: var(--accent); color: white; border: none; padding: 10px; border-radius: 8px; cursor: pointer; width: 100%; font-weight: bold; margin-top: 8px; }
+        button:active { opacity: 0.8; }
         
-        input, select { width: 100%; padding: 6px; margin: 4px 0; border-radius: 8px; border: 1px solid #ddd; box-sizing: border-box; font-size: 0.85rem; }
-        button { background: var(--accent); color: white; border: none; padding: 10px; border-radius: 10px; cursor: pointer; width: 100%; font-weight: bold; margin-top: 5px; }
+        .log-item { background: #fff; padding: 12px; margin-bottom: 8px; border-radius: 10px; border-left: 5px solid var(--accent); position: relative; }
+        .yellow-tag { background: #fff176; padding: 2px 5px; border-radius: 4px; font-weight: bold; }
+        .img-preview { width: 100%; max-height: 150px; object-fit: contain; background: #eee; margin-top: 5px; border-radius: 5px; }
         
-        /* 独立项布局 */
-        .special-grid { display: grid; grid-template-columns: 1fr; gap: 10px; }
-        .photo-preview { width: 100%; height: 100px; border: 2px dashed #ccc; border-radius: 10px; margin-top: 5px; display: flex; align-items: center; justify-content: center; background: #eee; overflow: hidden; }
-        .photo-preview img { width: 100%; height: 100%; object-fit: cover; }
-        
-        .log-item { background: #fff; padding: 10px; margin-bottom: 8px; border-radius: 12px; display: flex; justify-content: space-between; border-left: 5px solid var(--accent); box-shadow: 0 2px 5px rgba(0,0,0,0.03); }
+        /* 统计筛选器 */
+        .filter-box { display: flex; gap: 5px; align-items: center; margin-bottom: 10px; }
     </style>
 </head>
 <body>
-<div class="container">
-    <h2 style="text-align:center">🐾 Happy 全能管家 Pro</h2>
+<div style="max-width:600px; margin:0 auto;">
+    <h2 style="text-align:center; color:var(--heavy);">🐾 Happy 健康管家 Pro</h2>
 
     <div class="panel">
-        <div class="section-title">📊 核心健康监控 (五大项)</div>
-        <div class="core-grid" id="coreContainer">
-            </div>
+        <h3>📊 核心五大项记录</h3>
+        <div class="grid" id="coreContainer"></div>
     </div>
 
     <div class="panel">
-        <div class="section-title">✨ 专项护理 & 采购</div>
-        <div class="core-grid">
+        <h3>🏥 医疗与专项记录</h3>
+        <div class="grid">
             <div class="card">
-                <h3>💊 喂药</h3>
-                <select id="medType"><option>🐛 驱虫药</option><option>💊 其他药物</option></select>
-                <button onclick="upload('喂药','medType')">记录</button>
+                <strong>💊 喂药记录</strong>
+                <input type="datetime-local" class="dt-now">
+                <select id="medS"><option>🐛 驱虫药</option><option>💊 其他药物</option></select>
+                <button onclick="saveSpecial('喂药','medS')">保存</button>
             </div>
             <div class="card">
-                <h3>✂️ 美容</h3>
-                <select id="groomType"><option>🛁 洗澡</option><option>✂️ 剪毛</option></select>
-                <button onclick="upload('美容','groomType')">记录</button>
+                <strong>🛁 美容管理</strong>
+                <input type="datetime-local" class="dt-now">
+                <select id="groomS"><option>🛁 洗澡</option><option>✂️ 剪毛</option></select>
+                <button onclick="saveSpecial('美容','groomS')">保存</button>
+            </div>
+            <div class="card full-card">
+                <strong>🛒 鲜食采购</strong>
+                <input type="datetime-local" class="dt-now">
+                <input type="number" id="buyA" placeholder="采购合数">
+                <button onclick="savePurchase()">记录采购</button>
+            </div>
+            <div class="card full-card" style="background: #e3f2fd;">
+                <strong>🩺 问诊记录 (病例/账单)</strong>
+                <input type="datetime-local" class="dt-now" id="clinicDt">
+                <textarea id="clinicNote" placeholder="描述：医生建议、回访细节等"></textarea>
+                <input type="file" id="clinicFile" accept="image/*" onchange="handleImg(this, 'clinicPre')">
+                <img id="clinicPre" class="img-preview" style="display:none">
+                <button onclick="saveClinic()" style="background:#2196f3">上传问诊档案</button>
             </div>
         </div>
-        <div class="card" style="margin-top:10px;">
-            <h3>🛒 鲜食采购</h3>
-            <div style="display:flex; gap:5px;">
-                <input type="date" id="buyDate">
-                <input type="number" id="buyAmount" placeholder="合数">
-            </div>
-            <button onclick="uploadPurchase()">记录采购</button>
+    </div>
+
+    <div class="panel">
+        <h3>📈 灵活统计趋势</h3>
+        <div class="filter-box">
+            <input type="date" id="startRange"> 至 <input type="date" id="endRange">
+            <button onclick="fetchData()" style="width:60px; margin:0; padding:5px;">查询</button>
         </div>
+        <canvas id="myChart" height="180"></canvas>
     </div>
 
     <div class="panel">
-        <div class="section-title">📸 Happy 瞬间 (同步家人)</div>
-        <input type="file" id="fileIn" accept="image/*" onchange="handleFile(this)">
-        <div class="photo-preview" id="preview"><span>预览区</span></div>
-        <button onclick="uploadPhoto()" style="background:#81c784">上传照片到云端</button>
-    </div>
-
-    <div class="panel">
-        <div class="section-title">📈 近7天活动统计</div>
-        <canvas id="happyChart" height="150"></canvas>
-    </div>
-
-    <div class="panel">
-        <div class="section-title">📜 全家同步日志</div>
-        <div id="logList">正在拉取最新数据...</div>
+        <h3>📜 实时健康档案</h3>
+        <div id="logList">正在同步云端...</div>
     </div>
 </div>
 
 <script>
-    const SUPABASE_URL = 'https://xvfhbviwxhhovszxmgzs.supabase.co';
-    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh2Zmhidml3eGhob3ZzenhtZ3pzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIyMDY1NzYsImV4cCI6MjA4Nzc4MjU3Nn0.Ubyh6_cvVvdJfGgMdkkKiqYcELjE-MJRuQiV-2finVE'; 
-    const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    const S_URL = 'https://xvfhbviwxhhovszxmgzs.supabase.co';
+    const S_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh2Zmhidml3eGhob3ZzenhtZ3pzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIyMDY1NzYsImV4cCI6MjA4Nzc4MjU3Nn0.Ubyh6_cvVvdJfGgMdkkKiqYcELjE-MJRuQiV-2finVE'; 
+    const _db = supabase.createClient(S_URL, S_KEY);
 
-    const CORE_ITEMS = [
-        { name: '吃饭', icon: '🥣', plan: '08:00' },
-        { name: '喝水', icon: '💧', plan: '10:00' },
-        { name: '散步', icon: '🏃', plan: '18:00' },
-        { name: '尿尿', icon: '💦', plan: '07:00' },
-        { name: '排便', icon: '💩', plan: '07:30' }
+    const CORES = [
+        { n: '吃饭', icon: '🥣', opts: ['吃得香', '吃得不香', '完全不吃'], unit: '盒' },
+        { n: '喝水', icon: '💧', opts: ['正常', '超量', '少量'], unit: '次' },
+        { n: '散步', icon: '🏃', opts: ['正常', '亢奋', '萎靡'], unit: '次' },
+        { n: '尿尿', icon: '💦', opts: ['正常', '尿频', '尿少'], unit: '次' },
+        { n: '排便', icon: '💩', opts: ['正常', '拉稀', '干硬'], unit: '次' }
     ];
 
-    let currentPhoto = "";
+    let clinicImg = "";
 
-    // 1. 初始化UI
-    function initUI() {
-        const container = document.getElementById('coreContainer');
-        const nowTime = new Date().toTimeString().slice(0,5);
-        document.getElementById('buyDate').value = new Date().toISOString().split('T')[0];
+    function init() {
+        // 设置日期默认值
+        const now = new Date();
+        now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+        const localTime = now.toISOString().slice(0, 16);
+        document.querySelectorAll('.dt-now').forEach(el => el.value = localTime);
+        document.getElementById('startRange').value = new Date(Date.now() - 7*86400000).toISOString().split('T')[0];
+        document.getElementById('endRange').value = new Date().toISOString().split('T')[0];
 
-        container.innerHTML = CORE_ITEMS.map((item, idx) => `
+        document.getElementById('coreContainer').innerHTML = CORES.map((it, idx) => `
             <div class="card">
-                <h3>${item.icon} ${item.name}</h3>
-                <div class="plan-box">计划: ${item.plan}</div>
-                <input type="time" id="time_${idx}" value="${nowTime}">
-                <button onclick="uploadCore(${idx})">保存</button>
+                <strong>${it.icon} ${it.n}</strong>
+                <label>计划时间</label><input type="datetime-local" id="p_dt_${idx}" class="dt-now">
+                <label>实际发生</label><input type="datetime-local" id="a_dt_${idx}" class="dt-now">
+                <select id="s_${idx}">${it.opts.map(o => `<option>${o}</option>`).join('')}</select>
+                <input type="number" id="v_${idx}" placeholder="数量(${it.unit})">
+                <button onclick="saveCore(${idx})">保存记录</button>
             </div>
         `).join('');
+        fetchData();
     }
 
-    // 2. 核心上传逻辑 (包含黄标比对)
-    async function uploadCore(idx) {
-        const item = CORE_ITEMS[idx];
-        const actualTime = document.getElementById(`time_${idx}`).value;
-        const date = new Date().toLocaleDateString('zh-CN');
-        
-        // 计算时间差
-        const diff = Math.abs(toMin(actualTime) - toMin(item.plan));
-        let status = "按时完成";
-        if (diff > 120) status = "⚠️ 时间偏差大";
-
-        await saveToCloud(item.name, date, actualTime, status);
-    }
-
-    function toMin(t) { const [h, m] = t.split(':'); return parseInt(h)*60 + parseInt(m); }
-
-    // 3. 其他上传
-    async function upload(type, id) {
-        const val = document.getElementById(id).value;
-        await saveToCloud(type, new Date().toLocaleDateString('zh-CN'), new Date().toTimeString().slice(0,5), val);
-    }
-
-    async function uploadPurchase() {
-        const d = document.getElementById('buyDate').value;
-        const a = document.getElementById('buyAmount').value;
-        await saveToCloud('采购', d, "00:00", `买了 ${a} 合`);
-    }
-
-    function handleFile(input) {
+    // 处理图片预览
+    function handleImg(input, preId) {
         const reader = new FileReader();
-        reader.onload = (e) => {
-            document.getElementById('preview').innerHTML = `<img src="${e.target.result}">`;
-            currentPhoto = e.target.result;
+        reader.onload = e => {
+            clinicImg = e.target.result;
+            const pre = document.getElementById(preId);
+            pre.src = clinicImg; pre.style.display = 'block';
         };
         reader.readAsDataURL(input.files[0]);
     }
 
-    async function uploadPhoto() {
-        if(!currentPhoto) return alert("请选照片");
-        await saveToCloud('照片', new Date().toLocaleDateString('zh-CN'), new Date().toTimeString().slice(0,5), "分享了瞬间", currentPhoto);
-        currentPhoto = ""; document.getElementById('preview').innerHTML = "<span>预览区</span>";
+    // 通用保存：包含防重复检查
+    async function upload(payload) {
+        // 查重：同天同时间同类型
+        const { data: exist } = await _db.from('happy_logs')
+            .select('id').eq('type', payload.type).eq('date', payload.date).eq('time', payload.time);
+        
+        if (exist && exist.length > 0) {
+            alert(`⚠️ 警告：${payload.date} ${payload.time} 已有相同记录，已阻止重复提交！`);
+            return;
+        }
+
+        const { error } = await _db.from('happy_logs').insert([payload]);
+        if (error) alert("保存失败: " + error.message);
+        else { fetchData(); alert("同步成功！"); }
     }
 
-    async function saveToCloud(type, date, time, status, photo="") {
-        const { error } = await _supabase.from('happy_logs').insert([{ type, date, time, status, photo }]);
-        if(!error) fetchLogs(); else alert("同步失败");
+    // 1. 五大项保存
+    async function saveCore(idx) {
+        const item = CORES[idx];
+        const pDt = document.getElementById(`p_dt_${idx}`).value;
+        const aDt = document.getElementById(`a_dt_${idx}`).value;
+        const status = document.getElementById(`s_${idx}`).value;
+        const val = document.getElementById(`v_${idx}`).value;
+
+        // 计算时间偏差（黄标逻辑）
+        const diff = Math.abs(new Date(pDt) - new Date(aDt)) / 60000;
+        const warn = diff > 120 ? "⚠️ 偏差过大" : "正常";
+
+        await upload({
+            type: item.n,
+            date: aDt.split('T')[0],
+            time: aDt.split('T')[1],
+            status: `${status} | 数值: ${val}${item.unit} | ${warn}`,
+            photo: "" // 可根据需要添加图片字段
+        });
     }
 
-    // 4. 获取数据并生成图表
-    async function fetchLogs() {
-        const { data } = await _supabase.from('happy_logs').select('*').order('created_at', { ascending: false }).limit(30);
+    // 2. 问诊记录保存
+    async function saveClinic() {
+        const dt = document.getElementById('clinicDt').value;
+        const note = document.getElementById('clinicNote').value;
+        await upload({
+            type: '问诊',
+            date: dt.split('T')[0],
+            time: dt.split('T')[1],
+            status: note,
+            photo: clinicImg
+        });
+        clinicImg = ""; document.getElementById('clinicPre').style.display = 'none';
+    }
+
+    // 专项保存
+    async function saveSpecial(type, id) {
+        const dt = document.querySelector('.dt-now').value; // 简化处理
+        const val = document.getElementById(id).value;
+        await upload({ type, date: dt.split('T')[0], time: dt.split('T')[1], status: val });
+    }
+
+    async function savePurchase() {
+        const dt = document.querySelector('.dt-now').value;
+        const val = document.getElementById('buyA').value;
+        await upload({ type: '采购', date: dt.split('T')[0], time: dt.split('T')[1], status: `采购了 ${val} 合` });
+    }
+
+    // 3. 获取数据与动态图表
+    async function fetchData() {
+        const start = document.getElementById('startRange').value;
+        const end = document.getElementById('endRange').value;
+        
+        const { data, error } = await _db.from('happy_logs')
+            .select('*')
+            .gte('date', start)
+            .lte('date', end)
+            .order('date', { ascending: false });
+
         if (data) {
             renderLogs(data);
-            renderChart(data);
+            renderChart(data, start, end);
         }
     }
 
     function renderLogs(data) {
         document.getElementById('logList').innerHTML = data.map(l => `
             <div class="log-item">
-                <div style="flex:1">
-                    <span style="font-weight:bold">${l.type}</span> 
-                    <small>${l.date} ${l.time}</small><br>
-                    <span class="${l.status.includes('⚠️') ? 'yellow-tag' : ''}" style="font-size:0.8rem">${l.status}</span>
-                </div>
-                ${l.photo ? `<img src="${l.photo}" style="width:60px; height:60px; border-radius:8px; object-fit:cover;">` : ''}
+                <strong>${l.type}</strong> <small>${l.date} ${l.time}</small><br>
+                <span class="${l.status.includes('⚠️') ? 'yellow-tag' : ''}">${l.status}</span>
+                ${l.photo ? `<img src="${l.photo}" class="img-preview">` : ''}
             </div>
         `).join('');
     }
 
-    function renderChart(data) {
-        const ctx = document.getElementById('happyChart').getContext('2d');
-        const days = [...Array(7)].map((_, i) => {
-            const d = new Date(); d.setDate(d.getDate() - i);
-            return d.toLocaleDateString('zh-CN');
-        }).reverse();
-        
-        const datasets = ['吃饭','散步','排便'].map((type, i) => ({
-            label: type,
-            data: days.map(d => data.filter(l => l.date === d && l.type === type).length),
-            borderColor: ['#ffb7b2','#81c784','#ffcc80'][i],
+    function renderChart(data, start, end) {
+        const ctx = document.getElementById('myChart').getContext('2d');
+        const dateLabels = [];
+        let curr = new Date(start);
+        while(curr <= new Date(end)) {
+            dateLabels.push(curr.toISOString().split('T')[0]);
+            curr.setDate(curr.getDate() + 1);
+        }
+
+        const datasets = CORES.slice(0,3).map((it, i) => ({
+            label: it.n,
+            data: dateLabels.map(d => data.filter(l => l.date === d && l.type === it.n).length),
+            borderColor: ['#ffb7b2', '#81c784', '#64b5f6'][i],
             tension: 0.3
         }));
 
-        if (window.myChart) window.myChart.destroy();
-        window.myChart = new Chart(ctx, {
+        if (window.hChart) window.hChart.destroy();
+        window.hChart = new Chart(ctx, {
             type: 'line',
-            data: { labels: days.map(d => d.slice(5)), datasets }
+            data: { labels: dateLabels.map(d => d.slice(5)), datasets }
         });
     }
 
-    initUI();
-    fetchLogs();
-    setInterval(fetchLogs, 30000);
+    init();
+    setInterval(fetchData, 60000);
 </script>
 </body>
 </html>
