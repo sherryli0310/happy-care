@@ -3,101 +3,114 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Happy's Colorful Hub</title>
+    <title>Happy's Comprehensive Care</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root { --bg: #fffaf0; --paw-pink: #ffb7b2; --text: #5d4037; }
-        body { background-color: var(--bg); background-image: url('https://www.transparenttextures.com/patterns/paws.png'); font-family: sans-serif; color: var(--text); margin: 0; padding: 15px; }
-        
-        .main-layout { display: flex; gap: 20px; max-width: 1200px; margin: 0 auto; align-items: flex-start; }
-        .input-side { flex: 1.2; min-width: 350px; }
-        .log-side { flex: 0.8; min-width: 320px; position: sticky; top: 15px; max-height: 95vh; display: flex; flex-direction: column; }
-        
-        .panel { background: #fff; border-radius: 20px; padding: 18px; margin-bottom: 15px; border: 3px solid var(--paw-pink); box-shadow: 0 4px 15px rgba(255,183,178,0.2); }
-        h3 { color: var(--paw-pink); text-align: center; margin-top: 0; border-bottom: 2px dashed var(--paw-pink); padding-bottom: 5px; }
-        
+        body { background-color: var(--bg); background-image: url('https://www.transparenttextures.com/patterns/paws.png'); font-family: sans-serif; color: var(--text); margin: 0; padding: 10px; }
+        .main-layout { display: flex; gap: 15px; max-width: 1300px; margin: 0 auto; align-items: flex-start; }
+        .input-side { flex: 1.2; min-width: 380px; }
+        .log-side { flex: 0.8; min-width: 320px; position: sticky; top: 10px; max-height: 98vh; display: flex; flex-direction: column; }
+        .panel { background: #fff; border-radius: 20px; padding: 15px; margin-bottom: 12px; border: 3px solid var(--paw-pink); box-shadow: 0 4px 15px rgba(255,183,178,0.2); }
+        h3 { color: var(--paw-pink); text-align: center; margin: 0 0 10px 0; border-bottom: 2px dashed var(--paw-pink); padding-bottom: 5px; font-size: 1rem; }
         .card { background: #fdfcfb; border-radius: 12px; padding: 10px; margin-bottom: 8px; border: 1px solid #ffe4e1; }
         .row-item { display: flex; gap: 5px; align-items: center; margin-top: 8px; flex-wrap: wrap; border-bottom: 1px solid #eee; padding-bottom: 8px; }
-        
-        button { background: var(--paw-pink); color: white; border: none; padding: 8px 12px; border-radius: 15px; font-weight: bold; cursor: pointer; transition: 0.2s; }
-        button:active { transform: scale(0.95); }
-        .btn-add { background: #a2d2ff; margin-top: 5px; width: 100%; }
-        .btn-del { background: rgba(0,0,0,0.1); color: #888; padding: 2px 6px; font-size: 0.7rem; }
-        .btn-del:hover { background: #ff8a80; color: white; }
-
-        input, select, textarea { border: 1px solid #ddd; border-radius: 8px; padding: 6px; font-size: 0.85rem; }
-
-        /* 彩色日志 */
+        button { background: var(--paw-pink); color: white; border: none; padding: 6px 12px; border-radius: 15px; font-weight: bold; cursor: pointer; }
+        .btn-add { background: #a2d2ff; width: 100%; margin-top: 5px; }
+        .btn-save-sm { background: #81c784; padding: 4px 10px; font-size: 0.8rem; border-radius: 8px; }
+        input, select, textarea { border: 1px solid #ddd; border-radius: 8px; padding: 5px; font-size: 0.8rem; }
         #log-list { overflow-y: auto; flex: 1; }
-        .log-item { padding: 10px; margin-bottom: 8px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; border-left: 10px solid; box-shadow: 2px 2px 8px rgba(0,0,0,0.05); }
+        .log-item { padding: 8px; margin-bottom: 6px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; border-left: 8px solid; box-shadow: 1px 1px 5px rgba(0,0,0,0.05); font-size: 0.8rem; }
         
+        /* 颜色系统 */
         .color-吃饭 { background: #fff9c4; border-color: #fbc02d; }
         .color-排便 { background: #efe0d0; border-color: #8d6e63; }
         .color-散步 { background: #e8f5e9; border-color: #66bb6a; }
         .color-尿尿 { background: #e3f2fd; border-color: #42a5f5; }
         .color-喝水 { background: #e0f7fa; border-color: #26c6da; }
-        .color-问诊, .color-喂药 { background: #fce4ec; border-color: #ec407a; }
+        .color-喂药, .color-问诊 { background: #fce4ec; border-color: #ec407a; }
         .color-美容 { background: #f3e5f5; border-color: #ab47bc; }
         .color-采购 { background: #fff3e0; border-color: #ffa726; }
 
         .status-warn { color: #d32f2f; font-weight: bold; text-decoration: underline; }
-        .img-preview { width: 50px; height: 50px; object-fit: cover; border-radius: 5px; }
-
-        @media (max-width: 850px) { .main-layout { flex-direction: column; } .log-side { position: static; max-height: none; } }
-        .type-tag { font-size: 0.7rem; background: #eee; padding: 4px 10px; border-radius: 10px; cursor: pointer; margin: 2px; display: inline-block; }
+        .type-tag { font-size: 0.65rem; background: #eee; padding: 3px 8px; border-radius: 10px; cursor: pointer; margin: 2px; display: inline-block; }
         .type-tag.active { background: var(--paw-pink); color: white; }
+        @media (max-width: 900px) { .main-layout { flex-direction: column; } .log-side { position: static; max-height: none; } }
     </style>
 </head>
 <body>
 
-<h2 style="text-align:center; color:var(--paw-pink);">🐾 Happy's Colorful Hub</h2>
+<h2 style="text-align:center; color:var(--paw-pink); margin: 10px 0;">☁️ Happy 健康管理系统</h2>
 
 <div class="main-layout">
     <div class="input-side">
         <div class="panel">
-            <h3>📝 日常录入</h3>
-            <div class="card"><strong>🥣 吃饭</strong><div id="eat-rows"></div><button class="btn-add" onclick="addRow('eat')">➕ 添加记录</button></div>
-            <div class="card"><strong>💩 排便</strong><div id="poo-rows"></div><button class="btn-add" onclick="addRow('poo')">➕ 添加记录</button></div>
-            <div class="card"><strong>🏃 散步</strong><div id="walk-rows"></div><button class="btn-add" onclick="addRow('walk')">➕ 添加记录</button></div>
-            <div class="card"><strong>💦 尿尿</strong><div id="pee-rows"></div><button class="btn-add" onclick="addRow('pee')">➕ 添加记录</button></div>
-            <div class="card">
-                <strong>💧 喝水</strong>
+            <h3>🐾 日常生活录入</h3>
+            <div class="card"><strong>🥣 吃饭</strong><div id="eat-rows"></div><button class="btn-add" onclick="addRow('eat')">➕ 添加一餐</button></div>
+            <div class="card"><strong>💩 排便</strong><div id="poo-rows"></div><button class="btn-add" onclick="addRow('poo')">➕ 添加便便</button></div>
+            <div class="card"><strong>🏃 散步</strong><div id="walk-rows"></div><button class="btn-add" onclick="addRow('walk')">➕ 添加散步</button></div>
+            <div class="card"><strong>💦 尿尿</strong><div id="pee-rows"></div><button class="btn-add" onclick="addRow('pee')">➕ 添加尿尿</button></div>
+            <div class="card"><strong>💧 喝水</strong>
                 <div class="row-item">
                     <select id="w-s"><option>正常</option><option>超量</option><option>少量</option></select>
-                    <input type="number" id="w-c" placeholder="次" style="width:50px">
-                    <button onclick="saveWater()">保存</button>
+                    <input type="number" id="w-c" placeholder="次数" style="width:45px">
+                    <button class="btn-save-sm" onclick="saveWater()">保存</button>
                 </div>
             </div>
         </div>
 
         <div class="panel">
-            <h3>🏥 专项记录</h3>
-            <div class="card" style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-                <div><strong>💊 喂药/美容</strong><select id="spec-type" style="width:100%"><option>喂药</option><option>洗澡</option><option>剪毛</option></select><button onclick="saveSpecial()" style="width:100%;margin-top:5px">提交</button></div>
-                <div><strong>🛒 采购</strong><input type="number" id="buy-num" placeholder="合数" style="width:100%"><button onclick="saveBuy()" style="width:100%;margin-top:5px">提交</button></div>
+            <h3>🏥 专项记录（支持补录日期）</h3>
+            <div class="card">
+                <strong>💊 喂药</strong>
+                <div class="row-item">
+                    <input type="date" id="med-date">
+                    <input type="text" id="med-name" placeholder="药物名称" style="flex:1">
+                    <button class="btn-save-sm" onclick="saveSpecWithDate('med')">保存</button>
+                </div>
+            </div>
+            <div class="card">
+                <strong>🧼 美容</strong>
+                <div class="row-item">
+                    <input type="date" id="groom-date">
+                    <select id="groom-type"><option>洗澡</option><option>剪毛</option><option>剪指甲</option></select>
+                    <button class="btn-save-sm" onclick="saveSpecWithDate('groom')">保存</button>
+                </div>
+            </div>
+            <div class="card">
+                <strong>🛒 鲜食采购</strong>
+                <div class="row-item">
+                    <input type="date" id="buy-date">
+                    <input type="number" id="buy-n" placeholder="合数" style="width:50px">
+                    <button class="btn-save-sm" onclick="saveSpecWithDate('buy')">保存</button>
+                </div>
             </div>
             <div class="card">
                 <strong>🩺 问诊档案</strong>
                 <input type="datetime-local" id="clinic-dt" style="width:100%">
-                <textarea id="clinic-note" placeholder="病症说明..." style="width:100%; margin-top:5px; height:50px;"></textarea>
+                <textarea id="clinic-note" placeholder="病症说明..." style="width:100%; margin-top:5px; height:40px;"></textarea>
                 <input type="file" id="clinic-file" style="font-size:0.7rem; margin-top:5px;">
-                <button onclick="saveClinic()" style="width:100%; margin-top:5px; background:var(--paw-pink)">上传</button>
+                <button onclick="saveClinic()" style="width:100%; margin-top:5px;">同步上传</button>
             </div>
         </div>
 
         <div class="panel">
-            <h3>📊 趋势分析</h3>
-            <div style="display:flex; gap:5px; margin-bottom:10px;">
+            <h3>📊 全维度趋势分析</h3>
+            <div style="display:flex; gap:5px; align-items:center; margin-bottom:10px;">
                 <input type="date" id="d-s"> 至 <input type="date" id="d-e">
+                <button onclick="updateChart()" style="background:#a2d2ff">刷新图表</button>
             </div>
             <div id="type-selector">
                 <span class="type-tag active" onclick="this.classList.toggle('active')">吃饭</span>
                 <span class="type-tag active" onclick="this.classList.toggle('active')">排便</span>
+                <span class="type-tag active" onclick="this.classList.toggle('active')">尿尿</span>
                 <span class="type-tag active" onclick="this.classList.toggle('active')">散步</span>
+                <span class="type-tag active" onclick="this.classList.toggle('active')">喂药</span>
+                <span class="type-tag active" onclick="this.classList.toggle('active')">美容</span>
+                <span class="type-tag active" onclick="this.classList.toggle('active')">采购</span>
             </div>
-            <button onclick="updateChart()" style="width:100%; background:#a2d2ff; margin-top:10px">生成报表</button>
-            <canvas id="happyChart" style="margin-top:15px;"></canvas>
+            <canvas id="happyChart" style="margin-top:10px; max-height:280px;"></canvas>
         </div>
     </div>
 
@@ -110,29 +123,104 @@
 </div>
 
 <script>
-    // 配置 Supabase (请务必填入你的 Key)
     const S_URL = 'https://xvfhbviwxhhovszxmgzs.supabase.co';
     const S_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh2Zmhidml3eGhob3ZzenhtZ3pzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIyMDY1NzYsImV4cCI6MjA4Nzc4MjU3Nn0.Ubyh6_cvVvdJfGgMdkkKiqYcELjE-MJRuQiV-2finVE'; 
     const _db = supabase.createClient(S_URL, S_KEY);
-    
     let fileB64 = "";
 
-    // 自动填充日期
-    function getNowStr() {
-        const n = new Date(); n.setMinutes(n.getMinutes() - n.getTimezoneOffset());
-        return n.toISOString().slice(0, 16);
-    }
-    document.getElementById('clinic-dt').value = getNowStr();
-    document.getElementById('d-s').value = new Date().toISOString().split('T')[0];
-    document.getElementById('d-e').value = new Date().toISOString().split('T')[0];
+    const getNowISO = () => { const n = new Date(); n.setMinutes(n.getMinutes() - n.getTimezoneOffset()); return n.toISOString(); };
+    
+    // 初始化日期
+    const today = new Date().toISOString().split('T')[0];
+    ['med-date', 'groom-date', 'buy-date', 'd-s', 'd-e'].forEach(id => document.getElementById(id).value = today);
+    document.getElementById('clinic-dt').value = getNowISO().slice(0,16);
 
-    // --- 动态行核心修复 ---
     function addRow(type) {
         const container = document.getElementById(`${type}-rows`);
         const div = document.createElement('div');
         div.className = 'row-item';
-        
         let opt = '';
-        if(type==='eat') opt='<select><option>吃得香</option><option>不香</option><option>拒食</option></select><input type="number" placeholder="盒" style="width:40px">';
-        if(type==='walk') opt='<select><option>小区</option><option>公园</option><option>商场</option></select><select><option>正常</option><option>亢奋</option><option>萎靡</option></select>';
-        if(type==='poo') opt='<select><option>正常</option><option
+        if(type==='eat') opt='<select><option>吃得香</option><option>不香</option><option>拒食</option></select><input type="number" placeholder="盒" style="width:35px">';
+        if(type==='walk') opt='<select><option>小区</option><option>公园</option><option>商场</option></select>';
+        if(type==='poo') opt='<select><option>正常</option><option>拉稀</option><option>干硬</option></select>';
+        if(type==='pee') opt='<select><option>正常</option><option>尿频</option></select>';
+        div.innerHTML = `<input type="datetime-local" value="${getNowISO().slice(0,16)}" style="font-size:0.7rem">${opt}<button class="btn-save-sm" onclick="saveRow(this,'${type}')">✅</button>`;
+        container.appendChild(div);
+    }
+
+    async function saveRow(btn, type) {
+        const row = btn.parentElement;
+        const dt = row.querySelector('input').value;
+        const selects = row.querySelectorAll('select');
+        const num = row.querySelector('input[type="number"]');
+        const status = Array.from(selects).map(s=>s.value).join('|') + (num?`|${num.value}盒`:'');
+        const map = {eat:'吃饭', poo:'排便', walk:'散步', pee:'尿尿'};
+        await upload({type:map[type], date:dt.split('T')[0], time:dt.split('T')[1], status});
+        row.remove();
+    }
+
+    async function saveSpecWithDate(mode) {
+        let type, date, status;
+        if(mode==='med') { type='喂药'; date=document.getElementById('med-date').value; status=document.getElementById('med-name').value; }
+        if(mode==='groom') { type='美容'; date=document.getElementById('groom-date').value; status=document.getElementById('groom-type').value; }
+        if(mode==='buy') { type='采购'; date=document.getElementById('buy-date').value; status='鲜食采购 '+document.getElementById('buy-n').value+' 合'; }
+        await upload({type, date, time:new Date().toTimeString().slice(0,5), status: status || '已完成'});
+    }
+
+    async function saveWater() { await upload({type:'喝水', date:today, time:new Date().toTimeString().slice(0,5), status:document.getElementById('w-s').value+'|'+document.getElementById('w-c').value+'次'}); }
+    
+    async function saveClinic() { 
+        const dt = document.getElementById('clinic-dt').value;
+        await upload({type:'问诊', date:dt.split('T')[0], time:dt.split('T')[1], status:document.getElementById('clinic-note').value, photo:fileB64});
+        fileB64=""; document.getElementById('clinic-file').value="";
+    }
+
+    document.getElementById('clinic-file').onchange = (e) => { const r=new FileReader(); r.onload=f=>fileB64=f.target.result; r.readAsDataURL(e.target.files[0]); };
+
+    async function upload(p) { await _db.from('happy_logs').insert([p]); fetchLogs(); }
+
+    async function fetchLogs() {
+        const { data } = await _db.from('happy_logs').select('*').order('date', {ascending:false}).order('time',{ascending:false}).limit(20);
+        if(data) {
+            document.getElementById('log-list').innerHTML = data.map(l => {
+                const isWarn = l.status.includes('拉稀') || l.status.includes('拒食');
+                return `<div class="log-item color-${l.type}">
+                    <div style="flex:1"><strong>${l.type}</strong> <small>${l.date} ${l.time}</small><br><span class="${isWarn?'status-warn':''}">${l.status}</span></div>
+                    ${l.photo?`<img src="${l.photo}" style="width:40px;height:40px;border-radius:5px" onclick="window.open(this.src)">`:''}
+                    <button style="background:none;color:#ccc;font-size:1rem" onclick="deleteLog(${l.id})">🗑️</button>
+                </div>`;
+            }).join('');
+        }
+    }
+
+    async function deleteLog(id) { if(confirm("删除？")) { await _db.from('happy_logs').delete().eq('id', id); fetchLogs(); } }
+
+    let myChart = null;
+    const colorMap = { '吃饭':'#fbc02d', '排便':'#8d6e63', '散步':'#66bb6a', '尿尿':'#42a5f5', '喝水':'#26c6da', '喂药':'#ec407a', '美容':'#ab47bc', '采购':'#ffa726' };
+
+    async function updateChart() {
+        const s = document.getElementById('d-s').value, e = document.getElementById('d-e').value;
+        const activeTypes = Array.from(document.querySelectorAll('.type-tag.active')).map(el => el.innerText);
+        const { data } = await _db.from('happy_logs').select('*').gte('date', s).lte('date', e).in('type', activeTypes);
+        const ctx = document.getElementById('happyChart').getContext('2d');
+        if(myChart) myChart.destroy();
+        const labels = (s===e) ? [s.slice(5)] : [...new Set(data.map(l => l.date))].sort().map(d => d.slice(5));
+        myChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: activeTypes.map(t => ({
+                    label: t,
+                    data: labels.map(l => data.filter(d => d.type === t && d.date.includes(l)).length),
+                    backgroundColor: colorMap[t] || '#ccc'
+                }))
+            },
+            options: { responsive: true, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
+        });
+    }
+
+    fetchLogs();
+    setInterval(fetchLogs, 20000);
+</script>
+</body>
+</html>
