@@ -3,86 +3,156 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Happy 专业健康管家</title>
+    <title>Happy's Sweet Home</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        :root { --bg: #f4f7f6; --card: #ffffff; --accent: #ffb7b2; --warn: #ff5252; --heavy: #5d4037; }
-        body { background: var(--bg); font-family: sans-serif; margin: 0; padding: 10px; color: var(--heavy); font-size: 14px; }
-        .panel { background: var(--card); border-radius: 15px; padding: 15px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
-        h3 { margin: 0 0 10px 0; font-size: 16px; border-left: 4px solid var(--accent); padding-left: 8px; }
+        /* 萨摩耶主题色调 */
+        :root { --bg: #fffaf0; --cloud: #ffffff; --paw-pink: #ffb7b2; --sky-blue: #a2d2ff; --text: #5d4037; --bone-white: #f8f9fa; }
         
-        /* 网格布局 */
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .card { background: #fffcf9; padding: 10px; border-radius: 12px; border: 1px solid #eee; }
-        .full-card { grid-column: span 2; }
+        body { 
+            background-color: var(--bg); 
+            background-image: url('https://www.transparenttextures.com/patterns/paws.png'); /* 背景爪印纹理 */
+            font-family: "Microsoft YaHei", sans-serif; 
+            color: var(--text); 
+            margin: 0; padding: 10px; 
+        }
         
-        label { font-size: 12px; color: #888; display: block; margin-top: 5px; }
-        input, select, textarea { width: 100%; padding: 8px; margin: 4px 0; border-radius: 6px; border: 1px solid #ddd; box-sizing: border-box; font-size: 13px; }
-        button { background: var(--accent); color: white; border: none; padding: 10px; border-radius: 8px; cursor: pointer; width: 100%; font-weight: bold; margin-top: 8px; }
-        button:active { opacity: 0.8; }
+        .container { max-width: 600px; margin: 0 auto; }
         
-        .log-item { background: #fff; padding: 12px; margin-bottom: 8px; border-radius: 10px; border-left: 5px solid var(--accent); position: relative; }
-        .yellow-tag { background: #fff176; padding: 2px 5px; border-radius: 4px; font-weight: bold; }
-        .img-preview { width: 100%; max-height: 150px; object-fit: contain; background: #eee; margin-top: 5px; border-radius: 5px; }
+        /* 可爱面板样式 */
+        .panel { 
+            background: var(--cloud); 
+            border-radius: 25px; 
+            padding: 18px; 
+            margin-bottom: 15px; 
+            box-shadow: 0 8px 20px rgba(255, 183, 178, 0.2); 
+            border: 3px solid var(--paw-pink);
+        }
         
-        /* 统计筛选器 */
-        .filter-box { display: flex; gap: 5px; align-items: center; margin-bottom: 10px; }
+        h2, h3 { color: var(--paw-pink); text-align: center; margin-top: 0; }
+        h3 { font-size: 1.1rem; border-bottom: 2px dashed var(--paw-pink); padding-bottom: 5px; margin-bottom: 15px; }
+
+        /* 卡片样式 */
+        .card { 
+            background: var(--bone-white); 
+            border-radius: 15px; 
+            padding: 12px; 
+            margin-bottom: 10px; 
+            border: 1px solid #ffe4e1;
+        }
+
+        .row-item { display: flex; gap: 8px; align-items: center; margin-top: 8px; padding: 5px; border-bottom: 1px solid #eee; }
+        
+        /* 按钮样式 */
+        button { 
+            background: var(--paw-pink); 
+            color: white; border: none; 
+            padding: 8px 15px; 
+            border-radius: 20px; 
+            font-weight: bold; 
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        button:active { transform: scale(0.9); }
+        .btn-add { background: var(--sky-blue); font-size: 0.8rem; padding: 4px 10px; margin-top: 5px; }
+        .btn-save { width: 100%; margin-top: 10px; font-size: 1rem; }
+
+        input, select, textarea { 
+            border: 2px solid #eee; border-radius: 10px; 
+            padding: 8px; font-size: 0.9rem; outline: none;
+        }
+        input:focus { border-color: var(--paw-pink); }
+
+        .log-item { 
+            background: white; padding: 12px; margin-bottom: 10px; 
+            border-radius: 15px; border-left: 8px solid var(--paw-pink);
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.05);
+        }
+
+        .img-preview { width: 100%; border-radius: 10px; margin-top: 10px; border: 2px solid var(--paw-pink); }
+        .chart-container { display: none; } /* 默认隐藏统计图，筛选后显示 */
     </style>
 </head>
 <body>
-<div style="max-width:600px; margin:0 auto;">
-    <h2 style="text-align:center; color:var(--heavy);">🐾 Happy 健康管家 Pro</h2>
+
+<div class="container">
+    <h2>☁️ Happy's Fluffy Hub</h2>
 
     <div class="panel">
-        <h3>📊 核心五大项记录</h3>
-        <div class="grid" id="coreContainer"></div>
+        <h3>🐾 日常生活记录</h3>
+        
+        <div class="card" id="card-eat">
+            <strong>🥣 吃饭 (计划2次/天)</strong>
+            <div id="eat-rows"></div>
+            <button class="btn-add" onclick="addRow('eat')">➕ 添加一餐</button>
+        </div>
+
+        <div class="card">
+            <strong>💧 喝水 (按需记录)</strong>
+            <div class="row-item">
+                <select id="water-status"><option>正常</option><option>超量</option><option>少量</option></select>
+                <input type="number" id="water-count" placeholder="次数" style="width:60px">
+                <button onclick="saveWater()">保存</button>
+            </div>
+        </div>
+
+        <div class="card" id="card-poo">
+            <strong>💩 排便 (计划2-3次/天)</strong>
+            <div id="poo-rows"></div>
+            <button class="btn-add" onclick="addRow('poo')">➕ 添加便便</button>
+        </div>
+
+        <div class="card" id="card-walk">
+            <strong>🏃 散步 (计划3次/天)</strong>
+            <div id="walk-rows"></div>
+            <button class="btn-add" onclick="addRow('walk')">➕ 添加散步</button>
+        </div>
+
+        <div class="card" id="card-pee">
+            <strong>💦 尿尿 (计划3次/天)</strong>
+            <div id="pee-rows"></div>
+            <button class="btn-add" onclick="addRow('pee')">➕ 添加尿尿</button>
+        </div>
     </div>
 
     <div class="panel">
-        <h3>🏥 医疗与专项记录</h3>
-        <div class="grid">
+        <h3>🏥 专项记录</h3>
+        <div class="card">
+            <strong>🩺 问诊记录 (支持多格式)</strong>
+            <input type="datetime-local" id="clinic-time" class="set-now">
+            <textarea id="clinic-note" placeholder="病症详情、医生回访..." style="width:100%; margin-top:5px;"></textarea>
+            <input type="file" id="clinic-file" accept="image/*,application/pdf" onchange="handleFile(this)">
+            <button class="btn-save" onclick="saveClinic()">同步档案</button>
+        </div>
+        <div class="grid" style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
             <div class="card">
-                <strong>💊 喂药记录</strong>
-                <input type="datetime-local" class="dt-now">
-                <select id="medS"><option>🐛 驱虫药</option><option>💊 其他药物</option></select>
-                <button onclick="saveSpecial('喂药','medS')">保存</button>
+                <strong>💊 喂药/美容</strong>
+                <select id="spec-type"><option>喂药</option><option>洗澡</option><option>剪毛</option></select>
+                <button class="btn-save" onclick="saveSpecial()">记录</button>
             </div>
             <div class="card">
-                <strong>🛁 美容管理</strong>
-                <input type="datetime-local" class="dt-now">
-                <select id="groomS"><option>🛁 洗澡</option><option>✂️ 剪毛</option></select>
-                <button onclick="saveSpecial('美容','groomS')">保存</button>
-            </div>
-            <div class="card full-card">
-                <strong>🛒 鲜食采购</strong>
-                <input type="datetime-local" class="dt-now">
-                <input type="number" id="buyA" placeholder="采购合数">
-                <button onclick="savePurchase()">记录采购</button>
-            </div>
-            <div class="card full-card" style="background: #e3f2fd;">
-                <strong>🩺 问诊记录 (病例/账单)</strong>
-                <input type="datetime-local" class="dt-now" id="clinicDt">
-                <textarea id="clinicNote" placeholder="描述：医生建议、回访细节等"></textarea>
-                <input type="file" id="clinicFile" accept="image/*" onchange="handleImg(this, 'clinicPre')">
-                <img id="clinicPre" class="img-preview" style="display:none">
-                <button onclick="saveClinic()" style="background:#2196f3">上传问诊档案</button>
+                <strong>🛒 采购</strong>
+                <input type="number" id="buy-num" placeholder="合数" style="width:100%">
+                <button class="btn-save" onclick="saveBuy()">记录</button>
             </div>
         </div>
     </div>
 
     <div class="panel">
-        <h3>📈 灵活统计趋势</h3>
-        <div class="filter-box">
-            <input type="date" id="startRange"> 至 <input type="date" id="endRange">
-            <button onclick="fetchData()" style="width:60px; margin:0; padding:5px;">查询</button>
+        <h3>📊 趋势统计 (筛选后查看)</h3>
+        <div style="display:flex; gap:5px; align-items:center;">
+            <input type="date" id="date-start"> 至 <input type="date" id="date-end">
+            <button onclick="toggleChart()">查询</button>
         </div>
-        <canvas id="myChart" height="180"></canvas>
+        <div id="chart-area" class="chart-container">
+            <canvas id="happyChart"></canvas>
+        </div>
     </div>
 
     <div class="panel">
         <h3>📜 实时健康档案</h3>
-        <div id="logList">正在同步云端...</div>
+        <div id="log-list">正在嗅探数据...</div>
     </div>
 </div>
 
@@ -91,165 +161,123 @@
     const S_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh2Zmhidml3eGhob3ZzenhtZ3pzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIyMDY1NzYsImV4cCI6MjA4Nzc4MjU3Nn0.Ubyh6_cvVvdJfGgMdkkKiqYcELjE-MJRuQiV-2finVE'; 
     const _db = supabase.createClient(S_URL, S_KEY);
 
-    const CORES = [
-        { n: '吃饭', icon: '🥣', opts: ['吃得香', '吃得不香', '完全不吃'], unit: '盒' },
-        { n: '喝水', icon: '💧', opts: ['正常', '超量', '少量'], unit: '次' },
-        { n: '散步', icon: '🏃', opts: ['正常', '亢奋', '萎靡'], unit: '次' },
-        { n: '尿尿', icon: '💦', opts: ['正常', '尿频', '尿少'], unit: '次' },
-        { n: '排便', icon: '💩', opts: ['正常', '拉稀', '干硬'], unit: '次' }
-    ];
+    let fileBase64 = "";
 
-    let clinicImg = "";
-
-    function init() {
-        // 设置日期默认值
+    function setNow() {
         const now = new Date();
         now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
-        const localTime = now.toISOString().slice(0, 16);
-        document.querySelectorAll('.dt-now').forEach(el => el.value = localTime);
-        document.getElementById('startRange').value = new Date(Date.now() - 7*86400000).toISOString().split('T')[0];
-        document.getElementById('endRange').value = new Date().toISOString().split('T')[0];
-
-        document.getElementById('coreContainer').innerHTML = CORES.map((it, idx) => `
-            <div class="card">
-                <strong>${it.icon} ${it.n}</strong>
-                <label>计划时间</label><input type="datetime-local" id="p_dt_${idx}" class="dt-now">
-                <label>实际发生</label><input type="datetime-local" id="a_dt_${idx}" class="dt-now">
-                <select id="s_${idx}">${it.opts.map(o => `<option>${o}</option>`).join('')}</select>
-                <input type="number" id="v_${idx}" placeholder="数量(${it.unit})">
-                <button onclick="saveCore(${idx})">保存记录</button>
-            </div>
-        `).join('');
-        fetchData();
+        return now.toISOString().slice(0, 16);
     }
 
-    // 处理图片预览
-    function handleImg(input, preId) {
+    // 动态添加行逻辑
+    function addRow(type) {
+        const container = document.getElementById(`${type}-rows`);
+        const div = document.createElement('div');
+        div.className = 'row-item';
+        
+        let extraHtml = '';
+        if(type === 'eat') extraHtml = `<select><option>吃得香</option><option>不香</option><option>拒食</option></select><input type="number" placeholder="盒" style="width:40px">`;
+        if(type === 'walk') extraHtml = `<select><option>小区</option><option>公园</option><option>商场</option></select><select><option>正常</option><option>亢奋</option><option>萎靡</option></select>`;
+        if(type === 'poo') extraHtml = `<select><option>正常</option><option>拉稀</option><option>干硬</option></select>`;
+        if(type === 'pee') extraHtml = `<select><option>正常</option><option>尿频</option><option>尿少</option></select>`;
+
+        div.innerHTML = `
+            <input type="datetime-local" value="${setNow()}" style="font-size:0.7rem">
+            ${extraHtml}
+            <button style="background:#ff8a80; padding:2px 8px" onclick="this.parentElement.remove()">❌</button>
+            <button style="background:#81c784; padding:2px 8px" onclick="saveRow(this, '${type}')">✅</button>
+        `;
+        container.appendChild(div);
+    }
+
+    async function saveRow(btn, type) {
+        const row = btn.parentElement;
+        const dt = row.querySelector('input[type="datetime-local"]').value;
+        const selects = row.querySelectorAll('select');
+        const numInput = row.querySelector('input[type="number"]');
+        
+        const status = Array.from(selects).map(s => s.value).join(' | ') + (numInput ? ` | ${numInput.value}盒` : '');
+        
+        await upload({
+            type: type === 'eat' ? '吃饭' : (type === 'poo' ? '排便' : (type === 'walk' ? '散步' : '尿尿')),
+            date: dt.split('T')[0],
+            time: dt.split('T')[1],
+            status: status
+        });
+        row.remove();
+    }
+
+    // 其他保存逻辑
+    async function saveWater() {
+        const s = document.getElementById('water-status').value;
+        const c = document.getElementById('water-count').value;
+        await upload({ type: '喝水', date: new Date().toISOString().split('T')[0], time: new Date().toTimeString().slice(0,5), status: `${s} | ${c}次` });
+    }
+
+    function handleFile(input) {
         const reader = new FileReader();
-        reader.onload = e => {
-            clinicImg = e.target.result;
-            const pre = document.getElementById(preId);
-            pre.src = clinicImg; pre.style.display = 'block';
-        };
+        reader.onload = e => fileBase64 = e.target.result;
         reader.readAsDataURL(input.files[0]);
     }
 
-    // 通用保存：包含防重复检查
+    async function saveClinic() {
+        const dt = document.getElementById('clinic-time').value;
+        const note = document.getElementById('clinic-note').value;
+        await upload({ type: '问诊', date: dt.split('T')[0], time: dt.split('T')[1], status: note, photo: fileBase64 });
+        fileBase64 = "";
+    }
+
     async function upload(payload) {
-        // 查重：同天同时间同类型
-        const { data: exist } = await _db.from('happy_logs')
-            .select('id').eq('type', payload.type).eq('date', payload.date).eq('time', payload.time);
-        
-        if (exist && exist.length > 0) {
-            alert(`⚠️ 警告：${payload.date} ${payload.time} 已有相同记录，已阻止重复提交！`);
-            return;
-        }
+        // 查重
+        const { data: exist } = await _db.from('happy_logs').select('id').eq('type', payload.type).eq('date', payload.date).eq('time', payload.time);
+        if (exist && exist.length > 0) return alert("重复记录已被拦截！");
 
         const { error } = await _db.from('happy_logs').insert([payload]);
-        if (error) alert("保存失败: " + error.message);
-        else { fetchData(); alert("同步成功！"); }
+        if (!error) { fetchLogs(); } else { alert("上传失败"); }
     }
 
-    // 1. 五大项保存
-    async function saveCore(idx) {
-        const item = CORES[idx];
-        const pDt = document.getElementById(`p_dt_${idx}`).value;
-        const aDt = document.getElementById(`a_dt_${idx}`).value;
-        const status = document.getElementById(`s_${idx}`).value;
-        const val = document.getElementById(`v_${idx}`).value;
-
-        // 计算时间偏差（黄标逻辑）
-        const diff = Math.abs(new Date(pDt) - new Date(aDt)) / 60000;
-        const warn = diff > 120 ? "⚠️ 偏差过大" : "正常";
-
-        await upload({
-            type: item.n,
-            date: aDt.split('T')[0],
-            time: aDt.split('T')[1],
-            status: `${status} | 数值: ${val}${item.unit} | ${warn}`,
-            photo: "" // 可根据需要添加图片字段
-        });
-    }
-
-    // 2. 问诊记录保存
-    async function saveClinic() {
-        const dt = document.getElementById('clinicDt').value;
-        const note = document.getElementById('clinicNote').value;
-        await upload({
-            type: '问诊',
-            date: dt.split('T')[0],
-            time: dt.split('T')[1],
-            status: note,
-            photo: clinicImg
-        });
-        clinicImg = ""; document.getElementById('clinicPre').style.display = 'none';
-    }
-
-    // 专项保存
-    async function saveSpecial(type, id) {
-        const dt = document.querySelector('.dt-now').value; // 简化处理
-        const val = document.getElementById(id).value;
-        await upload({ type, date: dt.split('T')[0], time: dt.split('T')[1], status: val });
-    }
-
-    async function savePurchase() {
-        const dt = document.querySelector('.dt-now').value;
-        const val = document.getElementById('buyA').value;
-        await upload({ type: '采购', date: dt.split('T')[0], time: dt.split('T')[1], status: `采购了 ${val} 合` });
-    }
-
-    // 3. 获取数据与动态图表
-    async function fetchData() {
-        const start = document.getElementById('startRange').value;
-        const end = document.getElementById('endRange').value;
-        
-        const { data, error } = await _db.from('happy_logs')
-            .select('*')
-            .gte('date', start)
-            .lte('date', end)
-            .order('date', { ascending: false });
-
+    async function fetchLogs() {
+        const { data } = await _db.from('happy_logs').select('*').order('date', { ascending: false }).order('time', { ascending: false }).limit(30);
         if (data) {
-            renderLogs(data);
-            renderChart(data, start, end);
+            document.getElementById('log-list').innerHTML = data.map(l => `
+                <div class="log-item">
+                    <strong>${l.type}</strong> <small>${l.date} ${l.time}</small><br>
+                    <span>${l.status}</span>
+                    ${l.photo ? (l.photo.includes('pdf') ? '<p>📄 已上传PDF文档</p>' : `<img src="${l.photo}" class="img-preview">`) : ''}
+                </div>
+            `).join('');
         }
     }
 
-    function renderLogs(data) {
-        document.getElementById('logList').innerHTML = data.map(l => `
-            <div class="log-item">
-                <strong>${l.type}</strong> <small>${l.date} ${l.time}</small><br>
-                <span class="${l.status.includes('⚠️') ? 'yellow-tag' : ''}">${l.status}</span>
-                ${l.photo ? `<img src="${l.photo}" class="img-preview">` : ''}
-            </div>
-        `).join('');
+    function toggleChart() {
+        const area = document.getElementById('chart-area');
+        area.style.display = 'block';
+        updateChart();
     }
 
-    function renderChart(data, start, end) {
-        const ctx = document.getElementById('myChart').getContext('2d');
-        const dateLabels = [];
-        let curr = new Date(start);
-        while(curr <= new Date(end)) {
-            dateLabels.push(curr.toISOString().split('T')[0]);
-            curr.setDate(curr.getDate() + 1);
+    async function updateChart() {
+        const start = document.getElementById('date-start').value;
+        const end = document.getElementById('date-end').value;
+        const { data } = await _db.from('happy_logs').select('*').gte('date', start).lte('date', end);
+        
+        if(data) {
+            const ctx = document.getElementById('happyChart').getContext('2d');
+            const dates = [...new Set(data.map(l => l.date))].sort();
+            if(window.hChart) window.hChart.destroy();
+            window.hChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: dates,
+                    datasets: [{ label: '活动频率', data: dates.map(d => data.filter(l => l.date === d).length), backgroundColor: '#ffb7b2' }]
+                }
+            });
         }
-
-        const datasets = CORES.slice(0,3).map((it, i) => ({
-            label: it.n,
-            data: dateLabels.map(d => data.filter(l => l.date === d && l.type === it.n).length),
-            borderColor: ['#ffb7b2', '#81c784', '#64b5f6'][i],
-            tension: 0.3
-        }));
-
-        if (window.hChart) window.hChart.destroy();
-        window.hChart = new Chart(ctx, {
-            type: 'line',
-            data: { labels: dateLabels.map(d => d.slice(5)), datasets }
-        });
     }
 
-    init();
-    setInterval(fetchData, 60000);
+    // 初始化
+    fetchLogs();
+    setInterval(fetchLogs, 30000);
 </script>
+
 </body>
 </html>
