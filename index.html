@@ -2,76 +2,107 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Happy's Sweet Home</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Happy's Side-by-Side Care</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        :root { --bg: #fffaf0; --cloud: #ffffff; --paw-pink: #ffb7b2; --sky-blue: #a2d2ff; --text: #5d4037; --bone-white: #f8f9fa; --danger: #ff8a80; }
-        body { background-color: var(--bg); background-image: url('https://www.transparenttextures.com/patterns/paws.png'); font-family: "Microsoft YaHei", sans-serif; color: var(--text); margin: 0; padding: 10px; }
-        .container { max-width: 600px; margin: 0 auto; }
-        .panel { background: var(--cloud); border-radius: 25px; padding: 18px; margin-bottom: 15px; box-shadow: 0 8px 20px rgba(255, 183, 178, 0.2); border: 3px solid var(--paw-pink); }
+        :root { --bg: #fffaf0; --paw-pink: #ffb7b2; --sky-blue: #a2d2ff; --text: #5d4037; --white: #ffffff; }
+        
+        body { 
+            background-color: var(--bg); 
+            background-image: url('https://www.transparenttextures.com/patterns/paws.png'); 
+            font-family: "Microsoft YaHei", sans-serif; color: var(--text); margin: 0; padding: 15px; 
+        }
+
+        /* 核心左右布局容器 */
+        .main-layout { display: flex; gap: 20px; max-width: 1200px; margin: 0 auto; align-items: flex-start; }
+        
+        /* 左侧：输入面板 */
+        .input-side { flex: 1; min-width: 320px; }
+        
+        /* 右侧：实时档案面板 */
+        .log-side { flex: 1; min-width: 320px; position: sticky; top: 15px; max-height: 95vh; display: flex; flex-direction: column; }
+
+        .panel { 
+            background: var(--white); border-radius: 20px; padding: 18px; margin-bottom: 15px; 
+            border: 3px solid var(--paw-pink); box-shadow: 0 4px 15px rgba(255,183,178,0.2); 
+        }
+
         h2, h3 { color: var(--paw-pink); text-align: center; margin-top: 0; }
-        h3 { font-size: 1.1rem; border-bottom: 2px dashed var(--paw-pink); padding-bottom: 5px; margin-bottom: 15px; }
-        .card { background: var(--bone-white); border-radius: 15px; padding: 12px; margin-bottom: 10px; border: 1px solid #ffe4e1; }
-        .row-item { display: flex; gap: 8px; align-items: center; margin-top: 8px; padding: 5px; border-bottom: 1px solid #eee; flex-wrap: wrap; }
-        button { background: var(--paw-pink); color: white; border: none; padding: 8px 15px; border-radius: 20px; font-weight: bold; cursor: pointer; }
-        button:active { transform: scale(0.9); }
-        .btn-add { background: var(--sky-blue); font-size: 0.8rem; padding: 4px 10px; margin-top: 5px; }
-        .btn-save { width: 100%; margin-top: 10px; font-size: 1rem; }
-        .btn-del { background: var(--danger); padding: 4px 8px; font-size: 0.8rem; border-radius: 8px; }
-        input, select, textarea { border: 2px solid #eee; border-radius: 10px; padding: 8px; font-size: 0.9rem; outline: none; }
-        .log-item { background: white; padding: 12px; margin-bottom: 10px; border-radius: 15px; border-left: 8px solid var(--paw-pink); box-shadow: 2px 2px 5px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: flex-start; }
-        .log-content { flex: 1; }
-        .img-preview { width: 100%; border-radius: 10px; margin-top: 10px; border: 2px solid var(--paw-pink); }
-        .chart-container { display: none; margin-top: 15px; }
+        h3 { font-size: 1.1rem; border-bottom: 2px dashed var(--paw-pink); padding-bottom: 5px; margin-bottom: 12px; }
+
+        .card { background: #fdfcfb; border-radius: 12px; padding: 10px; margin-bottom: 8px; border: 1px solid #ffe4e1; }
+        .row-item { display: flex; gap: 5px; align-items: center; margin-top: 5px; flex-wrap: wrap; border-bottom: 1px solid #eee; padding-bottom: 5px; }
+        
+        /* 按钮与输入 */
+        button { background: var(--paw-pink); color: white; border: none; padding: 6px 12px; border-radius: 15px; font-weight: bold; cursor: pointer; font-size: 0.85rem; }
+        .btn-add { background: var(--sky-blue); margin-top: 5px; }
+        .btn-del { background: #ff8a80; padding: 4px 8px; }
+        input, select { border: 1px solid #ddd; border-radius: 8px; padding: 5px; font-size: 0.85rem; }
+
+        /* 日志滚动区 */
+        #log-list { overflow-y: auto; flex: 1; padding-right: 5px; }
+        .log-item { 
+            background: #fffafb; padding: 10px; margin-bottom: 8px; border-radius: 12px; 
+            border-left: 6px solid var(--paw-pink); display: flex; justify-content: space-between; 
+            align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.03); font-size: 0.85rem;
+        }
+
+        /* 响应式调整：手机端变回上下排版 */
+        @media (max-width: 768px) {
+            .main-layout { flex-direction: column; }
+            .log-side { position: static; max-height: none; }
+        }
+
+        .img-preview { width: 50px; height: 50px; object-fit: cover; border-radius: 5px; margin-left: 5px; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h2>☁️ Happy's Fluffy Hub</h2>
+<h2 style="text-align:center;">☁️ Happy's Fluffy Hub Pro</h2>
 
-    <div class="panel">
-        <h3>🐾 日常生活记录</h3>
-        <div class="card"><strong>🥣 吃饭</strong><div id="eat-rows"></div><button class="btn-add" onclick="addRow('eat')">➕ 添加一餐</button></div>
-        <div class="card">
-            <strong>💧 喝水</strong>
-            <div class="row-item">
-                <select id="water-status"><option>正常</option><option>超量</option><option>少量</option></select>
-                <input type="number" id="water-count" placeholder="次数" style="width:60px">
-                <button onclick="saveWater()">保存</button>
+<div class="main-layout">
+    <div class="input-side">
+        <div class="panel">
+            <h3>🐾 日常生活录入</h3>
+            <div class="card"><strong>🥣 吃饭</strong><div id="eat-rows"></div><button class="btn-add" onclick="addRow('eat')">➕ 添加一餐</button></div>
+            <div class="card"><strong>💩 排便</strong><div id="poo-rows"></div><button class="btn-add" onclick="addRow('poo')">➕ 添加便便</button></div>
+            <div class="card"><strong>🏃 散步</strong><div id="walk-rows"></div><button class="btn-add" onclick="addRow('walk')">➕ 添加散步</button></div>
+            <div class="card"><strong>💦 尿尿</strong><div id="pee-rows"></div><button class="btn-add" onclick="addRow('pee')">➕ 添加尿尿</button></div>
+            <div class="card">
+                <strong>💧 喝水</strong>
+                <div class="row-item">
+                    <select id="w-s"><option>正常</option><option>超量</option><option>少量</option></select>
+                    <input type="number" id="w-c" placeholder="次数" style="width:45px">
+                    <button onclick="saveWater()">保存</button>
+                </div>
             </div>
         </div>
-        <div class="card"><strong>💩 排便</strong><div id="poo-rows"></div><button class="btn-add" onclick="addRow('poo')">➕ 添加便便</button></div>
-        <div class="card"><strong>🏃 散步</strong><div id="walk-rows"></div><button class="btn-add" onclick="addRow('walk')">➕ 添加散步</button></div>
-        <div class="card"><strong>💦 尿尿</strong><div id="pee-rows"></div><button class="btn-add" onclick="addRow('pee')">➕ 添加尿尿</button></div>
-    </div>
 
-    <div class="panel">
-        <h3>🏥 专项记录</h3>
-        <div class="card">
-            <strong>🩺 问诊记录</strong>
-            <input type="datetime-local" id="clinic-time" class="set-now">
-            <textarea id="clinic-note" placeholder="病症详情、医生建议..." style="width:100%; margin-top:5px; height:60px;"></textarea>
-            <input type="file" id="clinic-file" accept="image/*,application/pdf" onchange="handleFile(this)">
-            <button class="btn-save" onclick="saveClinic()">同步档案</button>
+        <div class="panel">
+            <h3>🏥 专项与统计</h3>
+            <div class="card">
+                <strong>🩺 问诊记录</strong>
+                <input type="datetime-local" id="clinic-dt" style="width:100%">
+                <textarea id="clinic-note" placeholder="详情..." style="width:100%; margin-top:5px; height:40px; border-radius:8px; border:1px solid #ddd;"></textarea>
+                <input type="file" id="clinic-file" style="font-size:0.7rem; margin-top:5px;">
+                <button onclick="saveClinic()" style="width:100%; margin-top:5px;">同步档案</button>
+            </div>
+            <button onclick="document.getElementById('stats-area').style.display='block'" style="background:var(--sky-blue); width:100%">打开趋势分析报表</button>
+            <div id="stats-area" style="display:none; margin-top:10px;">
+                <input type="date" id="d-s"> 至 <input type="date" id="d-e">
+                <button onclick="updateChart()">查询</button>
+                <canvas id="happyChart" style="margin-top:10px;"></canvas>
+            </div>
         </div>
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-            <div class="card"><strong>💊 喂药/美容</strong><select id="spec-type"><option>喂药</option><option>洗澡</option><option>剪毛</option></select><button class="btn-save" onclick="saveSpecial()">记录</button></div>
-            <div class="card"><strong>🛒 采购</strong><input type="number" id="buy-num" placeholder="合数" style="width:100%"><button class="btn-save" onclick="saveBuy()">记录</button></div>
+    </div>
+
+    <div class="log-side">
+        <div class="panel" style="flex:1; display:flex; flex-direction:column;">
+            <h3>📜 实时健康档案</h3>
+            <div id="log-list">正在嗅探数据...</div>
         </div>
-    </div>
-
-    <div class="panel">
-        <h3>📊 趋势统计</h3>
-        <div style="display:flex; gap:5px;"><input type="date" id="date-start"> 至 <input type="date" id="date-end"><button onclick="toggleChart()">查询</button></div>
-        <div id="chart-area" class="chart-container"><canvas id="happyChart"></canvas></div>
-    </div>
-
-    <div class="panel">
-        <h3>📜 实时健康档案</h3>
-        <div id="log-list">正在嗅探数据...</div>
     </div>
 </div>
 
@@ -79,91 +110,80 @@
     const S_URL = 'https://xvfhbviwxhhovszxmgzs.supabase.co';
     const S_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh2Zmhidml3eGhob3ZzenhtZ3pzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIyMDY1NzYsImV4cCI6MjA4Nzc4MjU3Nn0.Ubyh6_cvVvdJfGgMdkkKiqYcELjE-MJRuQiV-2finVE'; 
     const _db = supabase.createClient(S_URL, S_KEY);
-    let fileBase64 = "";
+    let fileB64 = "";
 
-    function getLocalISO() {
-        const now = new Date();
-        now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
-        return now.toISOString().slice(0, 16);
+    function getNow() {
+        const n = new Date(); n.setMinutes(n.getMinutes() - n.getTimezoneOffset());
+        return n.toISOString().slice(0, 16);
     }
 
     function addRow(type) {
         const container = document.getElementById(`${type}-rows`);
         const div = document.createElement('div');
         div.className = 'row-item';
-        let extra = '';
-        if(type === 'eat') extra = `<select><option>吃得香</option><option>不香</option><option>拒食</option></select><input type="number" placeholder="盒" style="width:40px">`;
-        if(type === 'walk') extra = `<select><option>小区</option><option>公园</option><option>商场</option></select><select><option>正常</option><option>亢奋</option><option>萎靡</option></select>`;
-        if(type === 'poo') extra = `<select><option>正常</option><option>拉稀</option><option>干硬</option></select>`;
-        if(type === 'pee') extra = `<select><option>正常</option><option>尿频</option><option>尿少</option></select>`;
-        div.innerHTML = `<input type="datetime-local" value="${getLocalISO()}" style="font-size:0.7rem">${extra}<button style="background:var(--danger);padding:2px 8px" onclick="this.parentElement.remove()">❌</button><button style="background:#81c784;padding:2px 8px" onclick="saveRow(this, '${type}')">✅</button>`;
+        let opt = '';
+        if(type==='eat') opt='<select><option>吃得香</option><option>不香</option><option>拒食</option></select><input type="number" placeholder="盒" style="width:35px">';
+        if(type==='walk') opt='<select><option>小区</option><option>公园</option><option>商场</option></select><select><option>正常</option><option>亢奋</option><option>萎靡</option></select>';
+        if(type==='poo') opt='<select><option>正常</option><option>拉稀</option><option>干硬</option></select>';
+        if(type==='pee') opt='<select><option>正常</option><option>尿频</option><option>尿少</option></select>';
+        
+        div.innerHTML = `<input type="datetime-local" value="${getNow()}" style="font-size:0.7rem">${opt}<button style="background:#81c784;padding:2px 6px" onclick="saveRow(this,'${type}')">✅</button>`;
         container.appendChild(div);
     }
 
     async function saveRow(btn, type) {
         const row = btn.parentElement;
-        const dt = row.querySelector('input[type="datetime-local"]').value;
+        const dt = row.querySelector('input').value;
         const selects = row.querySelectorAll('select');
         const num = row.querySelector('input[type="number"]');
-        const status = Array.from(selects).map(s => s.value).join(' | ') + (num ? ` | ${num.value}盒` : '');
+        const status = Array.from(selects).map(s=>s.value).join('|') + (num?`|${num.value}盒`:'');
         await upload({ type: type==='eat'?'吃饭':(type==='poo'?'排便':(type==='walk'?'散步':'尿尿')), date: dt.split('T')[0], time: dt.split('T')[1], status: status });
         row.remove();
     }
 
-    async function saveWater() { const s=document.getElementById('water-status').value, c=document.getElementById('water-count').value; await upload({type:'喝水', date:new Date().toISOString().split('T')[0], time:new Date().toTimeString().slice(0,5), status:`${s} | ${c}次`}); }
-    function handleFile(input) { const reader=new FileReader(); reader.onload=e=>fileBase64=e.target.result; reader.readAsDataURL(input.files[0]); }
-    async function saveClinic() { const dt=document.getElementById('clinic-time').value, note=document.getElementById('clinic-note').value; await upload({type:'问诊', date:dt.split('T')[0], time:dt.split('T')[1], status:note, photo:fileBase64}); fileBase64=""; document.getElementById('clinic-file').value=""; }
-    async function saveSpecial() { const t=document.getElementById('spec-type').value; await upload({type:t, date:new Date().toISOString().split('T')[0], time:new Date().toTimeString().slice(0,5), status:'完成记录'}); }
-    async function saveBuy() { const n=document.getElementById('buy-num').value; await upload({type:'采购', date:new Date().toISOString().split('T')[0], time:new Date().toTimeString().slice(0,5), status:`买了 ${n} 合`}); }
-
-    async function upload(p) {
-        const { data: exist } = await _db.from('happy_logs').select('id').eq('type', p.type).eq('date', p.date).eq('time', p.time);
-        if (exist && exist.length > 0) return alert("重复记录！");
-        const { error } = await _db.from('happy_logs').insert([p]);
-        if (!error) fetchLogs(); else alert("上传失败");
+    async function saveWater() { 
+        await upload({type:'喝水', date:new Date().toISOString().split('T')[0], time:new Date().toTimeString().slice(0,5), status:document.getElementById('w-s').value+'|'+document.getElementById('w-c').value+'次'}); 
     }
 
-    // 删除功能
-    async function deleteLog(id) {
-        if (!confirm("确定要删除这条记录吗？家人可能已经看到了哦~")) return;
-        const { error } = await _db.from('happy_logs').delete().eq('id', id);
-        if (!error) {
-            alert("已删除！");
-            fetchLogs();
-        } else {
-            alert("删除失败：" + error.message);
-        }
+    async function saveClinic() {
+        const dt = document.getElementById('clinic-dt').value;
+        await upload({type:'问诊', date:dt.split('T')[0], time:dt.split('T')[1], status:document.getElementById('clinic-note').value, photo:fileB64});
+        fileB64="";
+    }
+
+    function handleFile(input) { const r=new FileReader(); r.onload=e=>fileB64=e.target.result; r.readAsDataURL(input.files[0]); }
+    document.getElementById('clinic-file').onchange = (e) => handleFile(e.target);
+
+    async function upload(p) {
+        const { error } = await _db.from('happy_logs').insert([p]);
+        if(!error) fetchLogs(); else alert("保存失败");
     }
 
     async function fetchLogs() {
-        const { data } = await _db.from('happy_logs').select('*').order('date', { ascending: false }).order('time', { ascending: false }).limit(30);
-        if (data) {
+        const { data } = await _db.from('happy_logs').select('*').order('date', {ascending:false}).order('time',{ascending:false}).limit(20);
+        if(data) {
             document.getElementById('log-list').innerHTML = data.map(l => `
                 <div class="log-item">
-                    <div class="log-content">
+                    <div style="flex:1">
                         <strong>${l.type}</strong> <small>${l.date} ${l.time}</small><br>
                         <span>${l.status}</span>
-                        ${l.photo ? (l.photo.includes('pdf') ? '<p>📄 已上传PDF文档</p>' : `<img src="${l.photo}" class="img-preview">`) : ''}
                     </div>
+                    ${l.photo?`<img src="${l.photo}" class="img-preview">`:''}
                     <button class="btn-del" onclick="deleteLog(${l.id})">🗑️</button>
                 </div>
             `).join('');
         }
     }
 
-    function toggleChart() { document.getElementById('chart-area').style.display='block'; updateChart(); }
-    async function updateChart() {
-        const s=document.getElementById('date-start').value, e=document.getElementById('date-end').value;
-        const { data } = await _db.from('happy_logs').select('*').gte('date', s).lte('date', e);
-        if(data) {
-            const ctx=document.getElementById('happyChart').getContext('2d'), dates=[...new Set(data.map(l=>l.date))].sort();
-            if(window.hChart) window.hChart.destroy();
-            window.hChart=new Chart(ctx,{type:'bar',data:{labels:dates,datasets:[{label:'活动量',data:dates.map(d=>data.filter(l=>l.date===d).length),backgroundColor:'#ffb7b2'}]}});
+    async function deleteLog(id) {
+        if(confirm("删除该记录？")) {
+            await _db.from('happy_logs').delete().eq('id', id);
+            fetchLogs();
         }
     }
 
     fetchLogs();
-    setInterval(fetchLogs, 30000);
+    setInterval(fetchLogs, 20000);
 </script>
 </body>
 </html>
